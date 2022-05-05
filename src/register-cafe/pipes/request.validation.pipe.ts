@@ -2,7 +2,6 @@ import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
-  BadRequestException,
 } from '@nestjs/common';
 
 @Injectable()
@@ -11,13 +10,14 @@ export class ValidationPipe implements PipeTransform<any> {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
-    console.log('value --- ', value);
-    console.log('metatype --- ', metatype);
     const { text } = value;
-    const textSplited = text.splited(' ');
-    const isError = textSplited.length > 1;
+    const textSplited = text.split(' ');
+    const isError = textSplited.length < 2;
     if (isError) {
-      throw new BadRequestException(`'제목 메뉴' 형태로 입력해주십시오.`);
+      return {
+        isError: true,
+        text: `'제목 메뉴' 형태로 입력해주십시오.`,
+      }
     }
     return value;
   }

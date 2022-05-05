@@ -1,4 +1,5 @@
 export default class RequestDto {
+  isError: boolean;
   tenantId: string;
   tenantDomain: string;
   channelId: string;
