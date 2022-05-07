@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class RegisterCafeValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
