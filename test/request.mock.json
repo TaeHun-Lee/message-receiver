@@ -1,0 +1,13 @@
+{
+  "tenantId": "1234567891234567891",
+  "tenantDomain": "guide.dooray.com",
+  "channelId": "1234567891234567891",
+  "channelName": "커맨드 가이드 채널",
+  "userId": "1234567891234567891",
+  "command": "/hi",
+  "text": "스타벅스 아메리카노 카페라떼",
+  "responseUrl": "https://guide.dooray.com/messenger/api/commands/hook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "appToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "cmdToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "triggerId": "1234567891234.xxxxxxxxxxxxxxxxxxxx"
+}
