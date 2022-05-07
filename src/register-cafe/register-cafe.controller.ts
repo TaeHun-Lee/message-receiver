@@ -8,10 +8,10 @@ import { RegisterCafeService } from './register-cafe.service';
 export class RegisterCafeController {
     constructor(private readonly appService: RegisterCafeService) {}
     @Post()
-    getBodyByPost(
+    async getBodyByPost(
       @Body(new ValidationPipe()) body: RequestDto,
       @Res() response: Response,
-    ): void {
-      response.status(HttpStatus.OK).json(this.appService.getBodyByPost(body));
+    ): Promise<void> {
+      response.status(HttpStatus.OK).json(await this.appService.getBodyByPost(body));
     }
 }

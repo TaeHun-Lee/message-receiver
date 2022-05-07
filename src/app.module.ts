@@ -1,20 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection, getConnectionOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RegisterCafeModule } from './register-cafe/register-cafe.module';
+import { typeOrmConfig } from './configs/typeorm.config';
 
 @Module({
-  imports: [TypeOrmModule.forRootAsync({
-    useFactory: async () =>
-    Object.assign(await getConnectionOptions(), {
-      autoLoadEntities: true,
-    }),
-  }), RegisterCafeModule],
+  imports: [TypeOrmModule.forRoot(typeOrmConfig), RegisterCafeModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-  constructor(private connection: Connection) {}
-}
+export class AppModule {}
