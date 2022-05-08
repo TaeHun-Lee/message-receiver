@@ -1,11 +1,39 @@
 import { Body, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { cafeMenuActions } from './cafe-menu.actions';
 import { CafeMenuRepository } from './cafe-menu.repository';
-import RequestDto from './dto/request.dto';
+import { InterActiveRequestDto, RequestDto } from './dto/request.dto';
 
 @Injectable()
 export class CafeMenuService {
   constructor(@InjectRepository(CafeMenuRepository) private cafeRepository : CafeMenuRepository) {}
+  getActionsList(@Body() body: RequestDto): object {
+    const response: object = cafeMenuActions;
+    return response;
+  }
+  returnAction(@Body() body: InterActiveRequestDto): any {
+    console.log('body --- ', body);
+    if (body.isError) {
+      return {
+        text: body.text,
+        responseType: 'ephemeral',
+      };
+    }
+    const { actionValue, cmdToken, tenant, channel, triggerId } = body;
+    switch(actionValue) {
+      case 'register':
+      case 'getAll':
+      case 'getOne':
+      case 'update':
+      case 'delete':
+      case 'vote':
+      default:
+        break;
+    }
+    return {
+      text: '띠용'
+    };
+  }
   async registerCafeMenu(@Body() body: RequestDto): Promise<object> {
     if (body.isError) {
       return {
@@ -29,6 +57,7 @@ export class CafeMenuService {
     return response;
   }
   async getOneCafeMenu(@Body() body: RequestDto): Promise<object> {
+    console.log('body --- ', body)
     if (body.isError) {
       return {
         text: body.text,
@@ -37,6 +66,7 @@ export class CafeMenuService {
     }
     const title = body?.text;
     const foundCafe = await this.cafeRepository.findOne(title);
+    console.log('foundCafe --- ', foundCafe);
     const { cafeName, menu } = foundCafe;
     const menuParsed = JSON.parse(menu);
     const response: object = {

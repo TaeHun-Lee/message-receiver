@@ -1,4 +1,4 @@
-export default class RequestDto {
+class RequestDto {
   isError: boolean;
   tenantId: string;
   tenantDomain: string;
@@ -12,3 +12,27 @@ export default class RequestDto {
   cmdToken: string;
   triggerId: string;
 }
+class InterActiveRequestDto {
+  isError: boolean;
+  tenant: {
+    domain: string;
+  };
+  channel: {
+    id: string;
+  };
+  user: object;
+  commandName: string;
+  command: string;
+  text: string;
+  callbackId: string;
+  actionName: string;
+  actionValue: string;
+  appToken: string;
+  cmdToken: string;
+  triggerId: string;
+  commandRequestUrl: string;
+  channelLogId: string;
+  originalMessage: object;
+}
+
+export { RequestDto, InterActiveRequestDto }
