@@ -1,36 +1,48 @@
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CafeMenuService } from './cafe-menu.service';
-import { RegisterCafeValidationPipe, CafeValidationPipe, InterActiveValidationPipe } from './cafe-menu.validation.pipe';
-import { RequestDto, InterActiveRequestDto } from './dto/request.dto';
+import { ValidationPipe } from './cafe-menu.validation.pipe';
+import { RequestDto } from './dto/request.dto';
 
-@Controller()
+@Controller('einz-cafe')
 export class CafeMenuController {
   constructor(private readonly cafeMenuService: CafeMenuService) {}
-  @Post('actions')
-  getActionsList(@Body() body: RequestDto,
-  @Res() response: Response,
-  ): void {
-    response.status(HttpStatus.OK).json(this.cafeMenuService.getActionsList(body));
-  }
-  @Post('returnAction')
-  returnAction(@Body(new InterActiveValidationPipe()) body: InterActiveRequestDto,
-  @Res() response: Response,
-  ): void {
-    response.status(HttpStatus.OK).json(this.cafeMenuService.returnAction(body));
-  }
-  @Post('register')
-  async registerCafeMenu(
-    @Body(new RegisterCafeValidationPipe()) body: RequestDto,
+  @Post('')
+  async controlActions(
+    @Body(new ValidationPipe()) body: RequestDto,
     @Res() response: Response,
   ): Promise<void> {
-    response.status(HttpStatus.OK).json(await this.cafeMenuService.registerCafeMenu(body));
-  }
-  @Post('getOne')
-  async getOneCafeMenu(
-    @Body(new CafeValidationPipe()) body: RequestDto,
-    @Res() response: Response,
-  ): Promise<void> {
-    response.status(HttpStatus.OK).json(await this.cafeMenuService.getOneCafeMenu(body));
+    let isError = body.isError;
+    const { text } = body;
+    const splited = text.split(' ');
+    const filtered = splited.filter(val => val.startsWith('--'));
+    const mapped = filtered.map(val => {
+      const tmp = val.trim();
+      return tmp.slice(2);
+    })
+    isError = !mapped || mapped.length === 0;
+    const actionName = mapped[0];
+    const actions = splited.slice(1);
+    if (actionName === 'register') {
+      response.status(HttpStatus.OK).json(await this.cafeMenuService.registerCafeMenu(actions));
+    } else if (actionName === 'update') {
+
+    } else if (actionName === 'delete') {
+
+    } else if (actionName === 'getTitles') {
+
+    } else if (actionName === 'getMenus') {
+      response.status(HttpStatus.OK).json(await this.cafeMenuService.getOneCafeMenu(actions));
+    } else if (actionName === 'vote') {
+
+    } else {
+      isError = true;
+    }
+    if (isError) {
+      response.status(HttpStatus.OK).json({
+        text: `액션을 정확히 입력해주세요.\nEX) --register, --getTitles, --getMenus`,
+        responseType: 'ephemeral',
+      });
+    }
   }
 }
