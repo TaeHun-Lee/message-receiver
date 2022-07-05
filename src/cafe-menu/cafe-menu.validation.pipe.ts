@@ -13,12 +13,46 @@ class ValidationPipe implements PipeTransform<any> {
     const { text } = value;
     const splited = text.split(' ');
     const filtered = splited?.filter(val => val.startsWith('--'));
-    const isError = typeof text !== 'string' || text.length === 0 || filtered == null || filtered == undefined || filtered.length === 0;
-    if (isError) {
-      return {
-        isError: true,
+    const mapped = filtered?.map(val => val?.trim()?.slice(2));
+    console.log('filtered - ', filtered);
+    console.log('mapped - ', mapped);
+
+    const errObj = {
+      isError: false,
+      errMsg: null,
+    }
+    const noMsgErr = typeof text !== 'string' || text.length === 0;
+    const noActionNameErr = !filtered || filtered.length === 0 || !mapped || mapped.length === 0;
+
+    const noActionErr = ((mapped[0] === 'add' || mapped[0] === 'addMenu' || mapped[0] === 'deleteMenu') && splited?.slice(1).length <= 1) ||
+      ((mapped[0] === 'delete' || mapped[0] === 'getMenu' || mapped[0] === 'vote') && splited?.slice(1).length === 0) ||
+      (mapped[0] === 'get' && splited?.slice(1).length > 0) 
+
+    if (noMsgErr || noActionNameErr || noActionErr) {
+      errObj.isError = true;
+      if (noActionErr) {
+        errObj.errMsg = {
+          text: `액션을 정확히 입력해주세요.\nEX) --액션 카페이름 카페메뉴1 카페메뉴2\n혹은 --액션 카페이름`,
+          responseType: 'ephemeral',
+        }
+      }
+      if (noActionNameErr) {
+        errObj.errMsg = {
+          text: `액션명을 정확히 입력해주세요.\nEX) --add --get --delete --addMenu --getMenu --deleteMenu --vote`,
+          responseType: 'ephemeral',
+        }
+      }
+      if (noMsgErr) {
+        errObj.errMsg = {
+          text: `인수를 정확히 입력해주세요.\nEX) --액션 카페이름 카페메뉴1 카페메뉴2\n혹은 --액션 카페이름`,
+          responseType: 'ephemeral',
+        }
       }
     }
+    const actions = splited?.slice(1)?.map(val => val.replace(/["']/g, ''));
+    value.errObj = errObj;
+    value.actionName = mapped[0];
+    value.actions = actions;
     return value;
   }
 

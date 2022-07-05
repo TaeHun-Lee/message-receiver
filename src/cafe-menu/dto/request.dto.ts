@@ -1,5 +1,6 @@
-class RequestDto {
-  isError: boolean;
+import { ListCollectionsOptions } from "typeorm";
+
+class RequestInterface {
   tenantId: string;
   tenantDomain: string;
   channelId: string;
@@ -12,6 +13,16 @@ class RequestDto {
   cmdToken: string;
   triggerId: string;
 }
+
+class RequestDto extends RequestInterface {
+  errObj: {
+    isError: false,
+    errMsg: null,
+  };
+  actionName: string;
+  actions: Array<string>;
+}
+
 class InterActiveRequestDto {
   isError: boolean;
   tenant: {
