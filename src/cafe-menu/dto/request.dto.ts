@@ -1,5 +1,3 @@
-import { ListCollectionsOptions } from "typeorm";
-
 class RequestInterface {
   tenantId: string;
   tenantDomain: string;
@@ -24,14 +22,9 @@ class RequestDto extends RequestInterface {
 }
 
 class InterActiveRequestDto {
-  isError: boolean;
-  tenant: {
-    domain: string;
-  };
-  channel: {
-    id: string;
-  };
-  user: object;
+  tenant: any;
+  channel: any;
+  user: any;
   commandName: string;
   command: string;
   text: string;
@@ -43,7 +36,7 @@ class InterActiveRequestDto {
   triggerId: string;
   commandRequestUrl: string;
   channelLogId: string;
-  originalMessage: object;
+  originalMessage: any;
 }
 
 export { RequestDto, InterActiveRequestDto }

@@ -1,7 +1,7 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { setegid } from 'process';
 import { CafeMenuRepository } from './cafe-menu.repository';
+import { ResponseDto } from './dto/response.dto';
 
 @Injectable()
 export class CafeMenuService {
@@ -121,6 +121,74 @@ export class CafeMenuService {
       text: '카페 메뉴가 삭제되었습니다. (자동으로 중복 제거)',
       responseType: 'ephemeral',
     };
+    return response;
+  }
+
+  async vote(body: string[]): Promise<object> {
+    const title = body[0]
+    const foundCafe = await this.cafeRepository.findOne(title);
+    if (!foundCafe) {
+      const response: object = {
+        text: '카페가 존재하지 않습니다.\n다른 카페 명을 입력해 주세요.',
+        responseType: 'ephemeral',
+      };
+      return response;
+    }
+    const menuList = JSON.parse(foundCafe.menu)
+    const voteMenus = []
+    for (const menu of menuList) {
+      const buttonObj = {
+        name: 'send',
+        type: 'button',
+        text: menu,
+        value: menu
+      }
+      voteMenus.push(buttonObj);
+    }
+    const response: ResponseDto = {
+      text: `오늘의 카페 : ${foundCafe.cafeName}`,
+      callbackId: 'voteParent',
+      attachments: [
+        {
+          callbackId: 'voteChild',
+          actions: voteMenus
+        }
+      ],
+    }
+    return response;
+  }
+
+  async voteIm(body: string[]): Promise<object> {
+    const title = body[0]
+    const foundCafe = await this.cafeRepository.findOne(title);
+    if (!foundCafe) {
+      const response: object = {
+        text: '카페가 존재하지 않습니다.\n다른 카페 명을 입력해 주세요.',
+        responseType: 'ephemeral',
+      };
+      return response;
+    }
+    const menuList = JSON.parse(foundCafe.menu)
+    const voteMenus = []
+    for (const menu of menuList) {
+      const buttonObj = {
+        name: 'send',
+        type: 'button',
+        text: menu,
+        value: menu
+      }
+      voteMenus.push(buttonObj);
+    }
+    const response: ResponseDto = {
+      text: `오늘의 카페 : ${foundCafe.cafeName}`,
+      callbackId: 'voteParent',
+      attachments: [
+        {
+          callbackId: 'voteChild',
+          actions: voteMenus
+        }
+      ],
+    }
     return response;
   }
 }
