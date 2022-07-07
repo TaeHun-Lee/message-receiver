@@ -25,7 +25,7 @@ class ValidationPipe implements PipeTransform<any> {
     const noActionNameErr = !filtered || filtered.length === 0 || !mapped || mapped.length === 0;
 
     const noActionErr = ((mapped[0] === 'add' || mapped[0] === 'addMenu' || mapped[0] === 'deleteMenu') && splited?.slice(1).length <= 1) ||
-      ((mapped[0] === 'delete' || mapped[0] === 'getMenu' || mapped[0] === 'vote') && splited?.slice(1).length === 0) ||
+      ((mapped[0] === 'delete' || mapped[0] === 'getMenu' || mapped[0] === 'vote') && (splited?.slice(1).length === 0 || splited?.slice(1).length > 1)) ||
       (mapped[0] === 'get' && splited?.slice(1).length > 0) 
 
     if (noMsgErr || noActionNameErr || noActionErr) {
@@ -62,4 +62,35 @@ class ValidationPipe implements PipeTransform<any> {
   }
 }
 
-export { ValidationPipe }
+@Injectable()
+class ImValidationPipe implements PipeTransform<any> {
+  async transform(value: any, { metatype }: ArgumentMetadata) {
+    if (!metatype || !this.toValidate(metatype)) {
+      return value;
+    }
+    const { actionName, callbackId } = value;
+
+    const errObj = {
+      isError: false,
+      errMsg: null,
+    }
+
+    if (!actionName || !callbackId) {
+      errObj.isError = true;
+      errObj.errMsg = {
+        text: `에러가 발생했습니다.`,
+        responseType: 'ephemeral',
+      }
+    }
+
+    value.errObj = errObj;
+    return value;
+  }
+
+  private toValidate(metatype: any): boolean {
+    const types: any[] = [String, Boolean, Number, Array, Object];
+    return !types.includes(metatype);
+  }
+}
+
+export { ValidationPipe, ImValidationPipe }

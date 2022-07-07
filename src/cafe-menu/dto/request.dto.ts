@@ -21,7 +21,7 @@ class RequestDto extends RequestInterface {
   actions: Array<string>;
 }
 
-class InterActiveRequestDto {
+class InterActiveRequestDtoInterface {
   tenant: any;
   channel: any;
   user: any;
@@ -37,6 +37,13 @@ class InterActiveRequestDto {
   commandRequestUrl: string;
   channelLogId: string;
   originalMessage: any;
+}
+
+class InterActiveRequestDto extends InterActiveRequestDtoInterface {
+  errObj: {
+    isError: false,
+    errMsg: null,
+  };
 }
 
 export { RequestDto, InterActiveRequestDto }

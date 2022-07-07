@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CafeMenuService } from './cafe-menu.service';
-import { ValidationPipe } from './cafe-menu.validation.pipe';
+import { ImValidationPipe, ValidationPipe } from './cafe-menu.validation.pipe';
 import { InterActiveRequestDto, RequestDto } from './dto/request.dto';
 
 @Controller('einz-cafe')
@@ -38,14 +38,14 @@ export class CafeMenuController {
 
   @Post('im')
   async controlInteractiveMessage(
-    @Body() body: InterActiveRequestDto,
+    @Body(new ImValidationPipe()) body: InterActiveRequestDto,
     @Res() response: Response,
   ): Promise<void> {
-    // if (body.errObj?.isError) {
-    //   response.status(HttpStatus.OK).json(body.errObj.errMsg);
-    //   return;
-    // }
+    if (body.errObj?.isError) {
+      response.status(HttpStatus.OK).json(body.errObj.errMsg);
+      return;
+    }
 
-    console.log('body -- ', body);
+    response.status(HttpStatus.OK).json(await this.cafeMenuService.voteIm(body));
   }
 }

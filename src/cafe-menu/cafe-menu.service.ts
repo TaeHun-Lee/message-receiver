@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CafeMenuRepository } from './cafe-menu.repository';
+import { InterActiveRequestDto } from './dto/request.dto';
 import { ResponseDto } from './dto/response.dto';
 
 @Injectable()
 export class CafeMenuService {
   constructor(@InjectRepository(CafeMenuRepository) private cafeRepository : CafeMenuRepository) {}
+  votedMenus: string[] = [];
+  voteMenus: string[] = [];
+  cafeName: string;
   async addCafe(body: string[]): Promise<object> {
     const title = body[0]
     const menus = body.slice(1);
@@ -135,10 +139,12 @@ export class CafeMenuService {
       return response;
     }
     const menuList = JSON.parse(foundCafe.menu)
+    this.voteMenus = menuList;
+    this.cafeName = foundCafe.cafeName;
     const voteMenus = []
     for (const menu of menuList) {
       const buttonObj = {
-        name: 'send',
+        name: 'sendVote',
         type: 'button',
         text: menu,
         value: menu
@@ -148,44 +154,80 @@ export class CafeMenuService {
     const response: ResponseDto = {
       text: `오늘의 카페 : ${foundCafe.cafeName}`,
       callbackId: 'voteParent',
+      responseType: 'inChannel',
       attachments: [
         {
-          callbackId: 'voteChild',
+          callbackId: 'voteMenu',
           actions: voteMenus
+        },
+        {
+          actions: [
+            {
+              callbackId: 'confirmVote',
+              name: 'confrimVote',
+              type: 'button',
+              text: '투표 종료',
+              value: 'confirmVote'
+            },
+            {
+              callbackId: 'cancelVote',
+              name: 'cancelVote',
+              type: 'button',
+              text: '투표 취소',
+              value: 'cancelVote'
+            }
+          ]
         }
       ],
     }
     return response;
   }
 
-  async voteIm(body: string[]): Promise<object> {
-    const title = body[0]
-    const foundCafe = await this.cafeRepository.findOne(title);
-    if (!foundCafe) {
-      const response: object = {
-        text: '카페가 존재하지 않습니다.\n다른 카페 명을 입력해 주세요.',
-        responseType: 'ephemeral',
-      };
-      return response;
-    }
-    const menuList = JSON.parse(foundCafe.menu)
-    const voteMenus = []
-    for (const menu of menuList) {
+  async voteIm(body: InterActiveRequestDto): Promise<object> {
+    console.log('body --- ', body);
+    this.votedMenus.push(body.actionValue);
+    console.log('voted -- ', this.votedMenus);
+    const savedMenus = this.voteMenus
+    const voteMenus = [];
+    for (const menu of savedMenus) {
       const buttonObj = {
-        name: 'send',
+        name: 'sendVote',
         type: 'button',
         text: menu,
-        value: menu
+        value: menu,
+        style: 'default'
+      }
+      if (menu === body.actionValue) {
+        buttonObj.style = 'primary';
       }
       voteMenus.push(buttonObj);
     }
     const response: ResponseDto = {
-      text: `오늘의 카페 : ${foundCafe.cafeName}`,
+      text: `오늘의 카페 : ${this.cafeName}`,
       callbackId: 'voteParent',
+      responseType: 'ephemeral',
       attachments: [
         {
-          callbackId: 'voteChild',
+          callbackId: 'voteMenu',
           actions: voteMenus
+        },
+        {
+          actions: [
+            {
+              callbackId: 'confirmVote',
+              name: 'confrimVote',
+              type: 'button',
+              text: '투표 종료',
+              value: 'confirmVote'
+            },
+            {
+              callbackId: 'cancelVote',
+              name: 'cancelVote',
+              type: 'button',
+              text: '투표 취소',
+              value: 'cancelVote'
+            }
+          ]
         }
       ],
     }
