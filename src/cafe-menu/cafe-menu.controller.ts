@@ -17,6 +17,7 @@ export class CafeMenuController {
       return;
     }
 
+    console.log(body);
     const { actionName, actions } = body;
 
     if (actionName === 'add') {
