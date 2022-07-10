@@ -1,15 +1,28 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AxiosResponse } from 'axios';
+import { map, Observable } from 'rxjs';
 import { CafeMenuRepository } from './cafe-menu.repository';
 import { InterActiveRequestDto } from './dto/request.dto';
 import { ResponseDto } from './dto/response.dto';
 
 @Injectable()
 export class CafeMenuService {
-  constructor(@InjectRepository(CafeMenuRepository) private cafeRepository : CafeMenuRepository) {}
-  votedMenus: string[] = [];
-  voteMenus: string[] = [];
-  cafeName: string;
+  voteObj: {
+    cafeName: string,
+    voteMenus: Array<any>,
+    votedMenus: Array<any>,
+    votedUsers: Array<any>
+  };
+  constructor(@InjectRepository(CafeMenuRepository) private cafeRepository : CafeMenuRepository, private readonly httpService: HttpService) {
+    this.voteObj = {
+      cafeName: '',
+      voteMenus: [],
+      votedMenus: [],
+      votedUsers: []
+    };
+  }
   async addCafe(body: string[]): Promise<object> {
     const title = body[0]
     const menus = body.slice(1);
@@ -138,16 +151,13 @@ export class CafeMenuService {
       };
       return response;
     }
-    const menuList = JSON.parse(foundCafe.menu)
-    this.voteMenus = menuList;
-    this.cafeName = foundCafe.cafeName;
+    const menuList = JSON.parse(foundCafe.menu);
+    this.voteObj.voteMenus = menuList;
+    this.voteObj.cafeName = foundCafe.cafeName;
     const voteMenus = []
     for (const menu of menuList) {
       const buttonObj = {
-        name: 'sendVote',
-        type: 'button',
-        text: menu,
-        value: menu
+        title: menu
       }
       voteMenus.push(buttonObj);
     }
@@ -158,7 +168,7 @@ export class CafeMenuService {
       attachments: [
         {
           callbackId: 'voteMenu',
-          actions: voteMenus
+          fields: voteMenus
         },
         {
           actions: [
@@ -166,7 +176,7 @@ export class CafeMenuService {
               callbackId: 'confirmVote',
               name: 'confrimVote',
               type: 'button',
-              text: '투표 종료',
+              text: '투표 시작',
               value: 'confirmVote'
             },
             {
@@ -184,53 +194,224 @@ export class CafeMenuService {
   }
 
   async voteIm(body: InterActiveRequestDto): Promise<object> {
-    console.log('body --- ', body);
-    this.votedMenus.push(body.actionValue);
-    console.log('voted -- ', this.votedMenus);
-    const savedMenus = this.voteMenus
-    const voteMenus = [];
-    for (const menu of savedMenus) {
-      const buttonObj = {
-        name: 'sendVote',
-        type: 'button',
-        text: menu,
-        value: menu,
-        style: 'default'
-      }
-      if (menu === body.actionValue) {
-        buttonObj.style = 'primary';
-      }
-      voteMenus.push(buttonObj);
-    }
-    const response: ResponseDto = {
-      text: `오늘의 카페 : ${this.cafeName}`,
-      callbackId: 'voteParent',
-      responseType: 'ephemeral',
-      attachments: [
-        {
-          callbackId: 'voteMenu',
-          actions: voteMenus
-        },
-        {
-          actions: [
-            {
-              callbackId: 'confirmVote',
-              name: 'confrimVote',
-              type: 'button',
-              text: '투표 종료',
-              value: 'confirmVote'
-            },
-            {
-              callbackId: 'cancelVote',
-              name: 'cancelVote',
-              type: 'button',
-              text: '투표 취소',
-              value: 'cancelVote'
-            }
-          ]
+
+    if (body.actionValue === 'confirmVote') {
+      const menuList = this.voteObj.voteMenus;
+      const voteMenus = [];
+      for (const menu of menuList) {
+        const buttonObj = {
+          name: 'sendVote',
+          type: 'button',
+          text: menu,
+          value: menu,
+          style: 'default'
         }
-      ],
+        voteMenus.push(buttonObj);
+      }
+      const response: ResponseDto = {
+        text: `오늘의 카페 : ${this.voteObj.cafeName}`,
+        callbackId: 'voteParent',
+        responseType: 'inChannel',
+        attachments: [
+          {
+            callbackId: 'voteMenu',
+            actions: voteMenus
+          },
+          {
+            actions: [
+              {
+                callbackId: 'confirmVote',
+                name: 'confrimVote',
+                type: 'button',
+                text: '투표 종료',
+                value: 'confirmVote'
+              },
+              {
+                callbackId: 'cancelVote',
+                name: 'cancelVote',
+                type: 'button',
+                text: '투표 취소',
+                value: 'cancelVote'
+              }
+            ]
+          }
+        ],
+      }
+      return response;
+    } else if (body.actionValue === 'cancelVote') {
+      this.voteObj = {
+        cafeName: '',
+        voteMenus: [],
+        votedMenus: [],
+        votedUsers: []
+      };
+      const response: object = {
+        text: '투표가 취소되었습니다.',
+        replaceOriginal: false,
+        responseType: 'ephemeral',
+      };
+      return response;
+    } else if (body.actionValue === 'endVote') {
+      const feildList = [];
+      for (const menu of this.voteObj.votedMenus) {
+        const foundUsers = this.voteObj.votedUsers.filter(user => {
+          return user.votedMenus.find(votedMenu => votedMenu === menu);
+        });
+        let userStr = ''
+        for (const user of foundUsers) {
+          userStr = `${user.name} `
+        }
+        const fieldObj = {
+          title: menu,
+          value: userStr
+        }
+        feildList.push(fieldObj);
+      }
+      const response: ResponseDto = {
+        text: `오늘의 카페 : ${this.voteObj.cafeName}`,
+        callbackId: 'voteParent',
+        responseType: 'ephemeral',
+        attachments: [
+          {
+            fields: [
+              {
+                title: '투표 종료',
+                value: `총 투표 인원 수 : ${this.voteObj.votedUsers.length}`
+              }
+            ]
+          },
+          {
+            fields: feildList,
+          }
+        ],
+      };
+      this.voteObj = {
+        cafeName: '',
+        voteMenus: [],
+        votedMenus: [],
+        votedUsers: []
+      };
+      return response;
+    } else {
+      const userEmail = body.user.email;
+      const headersRequest = {
+        'Content-Type': 'application/json',
+        'Authorization': `dooray-api j2id6kaltddi:CKP8nMaxQcCWpbbcDVbNpA`,
+      };
+      const userSearch = await this.httpService.get(`https://api.dooray.com/common/v1/members?externalEmailAddresses=${userEmail}`, {
+        headers: headersRequest
+      }).toPromise();
+      const crntUser = userSearch.data.result.find(user => user.externalEmailAddress === userEmail)?.name;
+
+      let userVoted = this.voteObj.votedUsers.find(user => user.name === crntUser);
+      if (userVoted) {
+        const index = this.voteObj.votedUsers.findIndex(user => user.name === crntUser);
+        const voted = userVoted.votedMenus;
+        const indexIsAlreadyVoted = voted.findIndex(voteMenu => voteMenu === body.actionValue);
+        if (indexIsAlreadyVoted > -1) {
+          this.voteObj.votedUsers[index].votedMenus = this.voteObj.votedUsers[index].votedMenus.filter(el => el !== body.actionValue);
+        } else {
+          voted.push(body.actionValue);
+          this.voteObj.votedUsers[index].votedMenus = voted;
+        }
+      } else {
+        this.voteObj.votedUsers.push({
+          name: crntUser,
+          votedMenus: [body.actionValue]
+        })
+      }
+      userVoted = this.voteObj.votedUsers.find(user => user.name === crntUser);
+
+      const tmpVotedMenus = [];
+      for (const user of this.voteObj.votedUsers) {
+        tmpVotedMenus.push(...user.votedMenus);
+      }
+      this.voteObj.votedMenus = [...new Set(tmpVotedMenus)];
+
+      const feildList = [];
+      for (const menu of this.voteObj.votedMenus) {
+        const foundUsers = this.voteObj.votedUsers.filter(user => {
+          return user.votedMenus.find(votedMenu => votedMenu === menu);
+        });
+        let userStr = ''
+        for (const user of foundUsers) {
+          userStr = `${user.name} `
+        }
+        const fieldObj = {
+          title: menu,
+          value: userStr
+        }
+        feildList.push(fieldObj);
+      }
+      
+      const allMenus = this.voteObj.voteMenus;
+      const voteMenus = [];
+      for (const menu of allMenus) {
+        const buttonObj = {
+          name: 'sendVote',
+          type: 'button',
+          text: menu,
+          value: menu,
+          style: 'default'
+        }
+        if (userVoted.votedMenus.find(votedMenu => votedMenu === menu)) {
+          buttonObj.style = 'primary';
+        }
+        voteMenus.push(buttonObj);
+      }
+      const response: ResponseDto = {
+        text: `오늘의 카페 : ${this.voteObj.cafeName}`,
+        callbackId: 'voteParent',
+        responseType: 'ephemeral',
+        attachments: [
+          {
+            callbackId: 'voteMenu',
+            actions: voteMenus
+          },
+          {
+            fields: feildList,
+          },
+          {
+            actions: [
+              {
+                callbackId: 'endVote',
+                name: 'endVote',
+                type: 'button',
+                text: '투표 종료',
+                value: 'endVote'
+              },
+              {
+                callbackId: 'cancelVote',
+                name: 'cancelVote',
+                type: 'button',
+                text: '투표 취소',
+                value: 'cancelVote'
+              }
+            ]
+          }
+        ],
+      }
+      return response;
     }
-    return response;
+  }
+
+  async memberTest(body: any): Promise<any> {
+    // Project > Projects > Members
+    // POST /project/v1/projects/{project-id}/members
+    // GET /project/v1/projects/{project-id}/members
+    // GET /project/v1/projects/{project-id}/members/{member-id}
+    // https://api.dooray.com/project/v1/projects/{project-id}
+    // GET /common/v1/members
+    //GET /common/v1/members?externalEmailAddresses={localpart2@domainpart2},{localpart2@domainpart2}&page=0&size=20
+    // curl -H 'Authorization: dooray-api {TOKEN}' -H 'Content-Type: application/json' https://api.dooray.com/common/v1/members?name=john
+    const headersRequest = {
+      'Content-Type': 'application/json', // afaik this one is not needed
+      'Authorization': `dooray-api j2id6kaltddi:CKP8nMaxQcCWpbbcDVbNpA`,
+    };
+    const test = await this.httpService.get('https://api.dooray.com/common/v1/members?externalEmailAddresses=dogbook7@einz.co.kr', {
+      headers: headersRequest
+    }).toPromise();
+    console.log('test --- ', test.data);
+    return test;
   }
 }

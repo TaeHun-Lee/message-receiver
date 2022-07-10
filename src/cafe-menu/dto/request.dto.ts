@@ -4,6 +4,7 @@ class RequestInterface {
   channelId: string;
   channelName: string;
   userId: string;
+  userEmail: string;
   command: string;
   text: string;
   responseUrl: string;
