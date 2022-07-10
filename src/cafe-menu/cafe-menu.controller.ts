@@ -45,15 +45,6 @@ export class CafeMenuController {
       response.status(HttpStatus.OK).json(body.errObj.errMsg);
       return;
     }
-    console.log('body --- ', body);
     response.status(HttpStatus.OK).json(await this.cafeMenuService.voteIm(body));
-  }
-  @Post('test')
-  async testMemberCheck(
-    @Body() body: RequestDto,
-    @Res() response: Response,
-  ): Promise<void> {
-    await this.cafeMenuService.memberTest(body);
-    // response.status(HttpStatus.OK).json(await this.cafeMenuService.memberTest(body));
   }
 }

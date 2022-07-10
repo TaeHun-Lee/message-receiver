@@ -1,8 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AxiosResponse } from 'axios';
-import { map, Observable } from 'rxjs';
 import { CafeMenuRepository } from './cafe-menu.repository';
 import { InterActiveRequestDto } from './dto/request.dto';
 import { ResponseDto } from './dto/response.dto';
@@ -393,25 +391,5 @@ export class CafeMenuService {
       }
       return response;
     }
-  }
-
-  async memberTest(body: any): Promise<any> {
-    // Project > Projects > Members
-    // POST /project/v1/projects/{project-id}/members
-    // GET /project/v1/projects/{project-id}/members
-    // GET /project/v1/projects/{project-id}/members/{member-id}
-    // https://api.dooray.com/project/v1/projects/{project-id}
-    // GET /common/v1/members
-    //GET /common/v1/members?externalEmailAddresses={localpart2@domainpart2},{localpart2@domainpart2}&page=0&size=20
-    // curl -H 'Authorization: dooray-api {TOKEN}' -H 'Content-Type: application/json' https://api.dooray.com/common/v1/members?name=john
-    const headersRequest = {
-      'Content-Type': 'application/json', // afaik this one is not needed
-      'Authorization': `dooray-api j2id6kaltddi:CKP8nMaxQcCWpbbcDVbNpA`,
-    };
-    const test = await this.httpService.get('https://api.dooray.com/common/v1/members?externalEmailAddresses=dogbook7@einz.co.kr', {
-      headers: headersRequest
-    }).toPromise();
-    console.log('test --- ', test.data);
-    return test;
   }
 }
