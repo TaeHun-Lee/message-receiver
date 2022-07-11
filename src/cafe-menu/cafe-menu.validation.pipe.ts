@@ -10,8 +10,6 @@ class ValidationPipe implements PipeTransform<any> {
     const splited = text.split(' ');
     const filtered = splited?.filter((val) => val.startsWith('--'));
     const mapped = filtered?.map((val) => val?.trim()?.slice(2));
-    console.log('filtered - ', filtered);
-    console.log('mapped - ', mapped);
 
     const errObj = {
       isError: false,

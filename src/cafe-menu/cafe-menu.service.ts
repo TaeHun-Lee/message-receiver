@@ -346,11 +346,11 @@ export class CafeMenuService {
           style: 'default',
         };
         // 순회 중인 메뉴가 현재 투표한 유저의 투표한 메뉴 리스트에 있을 경우 파란색 표시
-        if (
-          this.voteObj.votedUsers[userVotedIndex].votedMenus.find(
-            (votedMenu) => votedMenu === menu,
-          )
-        ) {
+        // 현재 버튼을 누른 사람이 이미 투표를 했는지 여부
+        const userVoted = this.voteObj.votedUsers.find(
+          (user) => user.name === crntUser,
+        );
+        if (userVoted.votedMenus.find((votedMenu) => votedMenu === menu)) {
           buttonObj.style = 'primary';
         }
         voteMenus.push(buttonObj);
