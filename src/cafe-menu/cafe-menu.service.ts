@@ -175,7 +175,9 @@ export class CafeMenuService {
     const response: ResponseDto = {
       text: `오늘의 카페 : ${foundCafe.cafeName}`,
       callbackId: 'voteParent',
-      responseType: 'inChannel',
+      responseType: 'ephemeral',
+      deleteOriginal: true,
+      replaceOriginal: false,
       attachments: [
         {
           callbackId: 'voteMenu',
@@ -226,6 +228,8 @@ export class CafeMenuService {
         text: `오늘의 카페 : ${this.voteObj.cafeName}`,
         callbackId: 'voteParent',
         responseType: 'inChannel',
+        deleteOriginal: true,
+        replaceOriginal: false,
         attachments: [
           {
             callbackId: 'voteMenu',
@@ -259,7 +263,8 @@ export class CafeMenuService {
       const response: object = {
         text: '투표가 취소되었습니다.',
         replaceOriginal: false,
-        responseType: 'ephemeral',
+        responseType: 'inChannel',
+        deleteOriginal: true,
       };
       return response;
     } else if (body.actionValue === 'endVote') {
@@ -269,7 +274,9 @@ export class CafeMenuService {
       const response: ResponseDto = {
         text: `오늘의 카페 : ${this.voteObj.cafeName}`,
         callbackId: 'voteParent',
-        responseType: 'ephemeral',
+        responseType: 'inChannel',
+        deleteOriginal: true,
+        replaceOriginal: false,
         attachments: [
           {
             fields: [
@@ -359,6 +366,8 @@ export class CafeMenuService {
         text: `오늘의 카페 : ${this.voteObj.cafeName}`,
         callbackId: 'voteParent',
         responseType: 'ephemeral',
+        deleteOriginal: false,
+        replaceOriginal: true,
         attachments: [
           {
             callbackId: 'voteMenu',
