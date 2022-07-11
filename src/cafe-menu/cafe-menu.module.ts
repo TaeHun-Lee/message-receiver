@@ -8,6 +8,6 @@ import { CafeMenuService } from './cafe-menu.service';
 @Module({
   imports: [TypeOrmModule.forFeature([CafeMenuRepository]), HttpModule],
   controllers: [CafeMenuController],
-  providers: [CafeMenuService]
+  providers: [CafeMenuService],
 })
 export class CafeMenuModule {}

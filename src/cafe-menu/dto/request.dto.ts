@@ -15,8 +15,8 @@ class RequestInterface {
 
 class RequestDto extends RequestInterface {
   errObj: {
-    isError: false,
-    errMsg: null,
+    isError: false;
+    errMsg: null;
   };
   actionName: string;
   actions: Array<string>;
@@ -42,9 +42,9 @@ class InterActiveRequestDtoInterface {
 
 class InterActiveRequestDto extends InterActiveRequestDtoInterface {
   errObj: {
-    isError: false,
-    errMsg: null,
+    isError: false;
+    errMsg: null;
   };
 }
 
-export { RequestDto, InterActiveRequestDto }
+export { RequestDto, InterActiveRequestDto };
