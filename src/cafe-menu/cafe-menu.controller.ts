@@ -12,40 +12,62 @@ export class CafeMenuController {
     @Body(new ValidationPipe()) body: RequestDto,
     @Res() response: Response,
   ): Promise<void> {
+    // Validation Pipe에서 에러 검증하여 에러 객체 추가
     if (body.errObj?.isError) {
       response.status(HttpStatus.OK).json(body.errObj.errMsg);
       return;
     }
 
-    console.log(body);
     const { actionName, actions } = body;
 
     if (actionName === 'add') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.addCafe(actions));
+      // 카페 추가
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.addCafe(actions));
     } else if (actionName === 'get') {
+      // 전체 카페 조회
       response.status(HttpStatus.OK).json(await this.cafeMenuService.getCafe());
     } else if (actionName === 'delete') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.delete(actions));
+      // 카페 삭제
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.delete(actions));
     } else if (actionName === 'addMenu') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.addMenu(actions));
+      // 카페 개별 메뉴 추가
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.addMenu(actions));
     } else if (actionName === 'getMenu') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.getMenu(actions));
+      // 카페 전체 메뉴 조회
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.getMenu(actions));
     } else if (actionName === 'deleteMenu') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.deleteMenu(actions));
+      // 카페 개별 메뉴 삭제
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.deleteMenu(actions));
     } else if (actionName === 'vote') {
-      response.status(HttpStatus.OK).json(await this.cafeMenuService.vote(actions));
+      // 카페로 투표 생성
+      response
+        .status(HttpStatus.OK)
+        .json(await this.cafeMenuService.vote(actions));
     }
   }
 
-  @Post('im')
+  @Post('im') // Button에 반응하는 경우만 처리
   async controlInteractiveMessage(
     @Body(new ImValidationPipe()) body: InterActiveRequestDto,
     @Res() response: Response,
   ): Promise<void> {
+    // Validation Pipe에서 에러 검증하여 에러 객체 추가
     if (body.errObj?.isError) {
       response.status(HttpStatus.OK).json(body.errObj.errMsg);
       return;
     }
-    response.status(HttpStatus.OK).json(await this.cafeMenuService.voteIm(body));
+    response
+      .status(HttpStatus.OK)
+      .json(await this.cafeMenuService.voteIm(body));
   }
 }
